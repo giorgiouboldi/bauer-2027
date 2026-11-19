@@ -1,6 +1,8 @@
 import csv
 import os
+import re
 import time
+import unicodedata
 from urllib.parse import quote, unquote
 
 import requests
@@ -16,20 +18,41 @@ def valore(info, chiave):
 
 
 def chiave_file(nome):
-    """Forma uniforme del nome di un file, per collegare i due CSV."""
+    """Forma uniforme del nome di un file, per collegare i dati di Wikidata e di Commons."""
     return nome.removeprefix("File:").replace("_", " ")
 
 
-def crediti(titoli, file_csv, collegamenti):
-    """Scrive un CSV con titolo, link, autore, licenza, data e monumento di ogni file.
+def nome_sicuro(nome):
+    """Nome senza accenti, spazi o simboli: solo lettere, cifre, underscore e estensione minuscola."""
+    base, ext = os.path.splitext(nome)
+    base = unicodedata.normalize("NFKD", base).encode("ascii", "ignore").decode("ascii")
+    base = re.sub(r"[^A-Za-z0-9]+", "_", base).strip("_") or "file"
+    ext = re.sub(r"[^a-z0-9]", "", ext.lower())
+    return base + ("." + ext if ext else "")
 
-    collegamenti: dizionario da nome del file al Q-number del monumento su Wikidata.
-    """
+
+def assegna_nomi(originali):
+    """Un nome sicuro per ogni file originale, senza due file con lo stesso nome."""
+    sicuri, usati = {}, set()
+    for chiave in sorted(originali):
+        base = nome_sicuro(originali[chiave])
+        candidato, n = base, 2
+        while candidato in usati:
+            radice, ext = os.path.splitext(base)
+            candidato = f"{radice}_{n}{ext}"
+            n += 1
+        usati.add(candidato)
+        sicuri[chiave] = candidato
+    return sicuri
+
+
+def crediti(titoli, file_csv, collegamenti, sicuri):
+    """Scrive un CSV con una riga per ogni coppia monumento-file, con autore, licenza e data."""
     with open(file_csv, "w", newline="", encoding="utf-8") as f:
         scrittore = csv.writer(f)
         scrittore.writerow([
-            "file", "pagina", "autore", "licenza", "link_licenza",
-            "credit", "data", "monumento_wikidata",
+            "monumento", "file", "file_originale", "pagina", "autore",
+            "licenza", "link_licenza", "credit", "data",
         ])
         # l'API accetta al massimo 50 titoli per richiesta
         for i in range(0, len(titoli), 50):
@@ -47,57 +70,78 @@ def crediti(titoli, file_csv, collegamenti):
                     continue  # file non trovato
                 info = pagina["imageinfo"][0]["extmetadata"]
                 nome = pagina["title"]
+                chiave = chiave_file(nome)
                 link = "https://commons.wikimedia.org/wiki/" + quote(nome.replace(" ", "_"))
-                monumenti = collegamenti.get(chiave_file(nome), [])
-                scrittore.writerow([
-                    nome,
-                    link,
-                    valore(info, "Artist"),
-                    valore(info, "LicenseShortName"),
-                    valore(info, "LicenseUrl"),
-                    valore(info, "Credit"),
-                    valore(info, "DateTimeOriginal") or valore(info, "DateTime"),
-                    ";".join(monumenti),
-                ])
+                for monumento in collegamenti.get(chiave, []):
+                    scrittore.writerow([
+                        monumento,
+                        sicuri[chiave],
+                        nome.removeprefix("File:"),
+                        link,
+                        valore(info, "Artist"),
+                        valore(info, "LicenseShortName"),
+                        valore(info, "LicenseUrl"),
+                        valore(info, "Credit"),
+                        valore(info, "DateTimeOriginal") or valore(info, "DateTime"),
+                    ])
             time.sleep(1)  # una pausa tra una richiesta e l'altra
 
 
-def scarica(titoli, cartella, larghezza=800):
-    """Scarica ogni file nella cartella, con il nome originale e la larghezza indicata."""
+def scarica(elenco, cartella, larghezza=800):
+    """Scarica ogni file da Commons e lo salva con il nome sicuro."""
     os.makedirs(cartella, exist_ok=True)
-    for titolo in titoli:
-        nome = titolo.removeprefix("File:")
-        url = f"https://commons.wikimedia.org/wiki/Special:FilePath/{quote(nome)}?width={larghezza}"
+    for originale, sicuro in elenco:
+        url = f"https://commons.wikimedia.org/wiki/Special:FilePath/{quote(originale)}?width={larghezza}"
         r = requests.get(url, headers=HEADERS, timeout=60)
         r.raise_for_status()
-        with open(os.path.join(cartella, nome), "wb") as f:
+        with open(os.path.join(cartella, sicuro), "wb") as f:
             f.write(r.content)
-        print("scaricato:", nome)
+        print("scaricato:", sicuro)
         time.sleep(1)  # una pausa tra un download e l'altro
 
 
 if __name__ == "__main__":
     # il CSV esportato dalla query su query.wikidata.org
     with open("risultati_wikidata.csv", encoding="utf-8") as f:
-        righe = list(csv.DictReader(f))
+        lettore = csv.DictReader(f)
+        righe = list(lettore)
+        campi = lettore.fieldnames
 
-    COLONNA = "immagine" if "immagine" in righe[0] else "immagine1"
+    COLONNA = "immagine" if "immagine" in campi else "immagine1"
 
-    # per ogni file, i monumenti di Wikidata a cui è collegato (es. Q839012)
-    collegamenti = {}
+    # per ogni file originale, i monumenti di Wikidata a cui è collegato
+    collegamenti, originali = {}, {}
     for r in righe:
         if r[COLONNA]:
             # il valore è un link tipo .../Special:FilePath/Nome%20file.jpg
             nome = unquote(r[COLONNA].split("/Special:FilePath/")[1].split("?")[0])
+            chiave = chiave_file("File:" + nome)
+            originali.setdefault(chiave, nome)
             q = r["monumento"].rsplit("/", 1)[-1]
-            lista = collegamenti.setdefault(chiave_file("File:" + nome), [])
+            lista = collegamenti.setdefault(chiave, [])
             if q not in lista:
                 lista.append(q)
 
-    # un file può comparire più volte nella query: lo teniamo una sola volta
-    titoli = sorted(set("File:" + k for k in collegamenti))
-    print(len(titoli), "immagini trovate")
+    sicuri = assegna_nomi(originali)
+    print(len(originali), "immagini trovate")
 
-    crediti(titoli, "crediti.csv", collegamenti)
+    # copia del CSV di Wikidata con le due colonne comuni: monumento e file
+    with open("risultati_wikidata_pulito.csv", "w", newline="", encoding="utf-8") as f:
+        scrittore = csv.DictWriter(f, fieldnames=campi + ["file"])
+        scrittore.writeheader()
+        for r in righe:
+            file_sicuro = ""
+            if r[COLONNA]:
+                nome = unquote(r[COLONNA].split("/Special:FilePath/")[1].split("?")[0])
+                file_sicuro = sicuri[chiave_file("File:" + nome)]
+            r["monumento"] = r["monumento"].rsplit("/", 1)[-1]
+            r["file"] = file_sicuro
+            scrittore.writerow(r)
+    print("risultati scritti in risultati_wikidata_pulito.csv")
+
+    titoli = ["File:" + originali[k] for k in sorted(originali)]
+    crediti(titoli, "crediti.csv", collegamenti, sicuri)
     print("crediti scritti in crediti.csv")
-    scarica(titoli, "immagini", larghezza=800)
+
+    elenco = [(originali[k], sicuri[k]) for k in sorted(originali)]
+    scarica(elenco, "immagini", larghezza=800)

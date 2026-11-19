@@ -1,6 +1,6 @@
 # Workflow: monumenti WLM con immagini e crediti
 
-Questo workflow parte dalla query su Wikidata, raccoglie i crediti delle immagini su Wikimedia Commons e scarica le immagini. Lo script si chiama `wlm.py` ed è in questa cartella.
+Questo workflow parte dalla query su Wikidata, raccoglie i crediti delle immagini su Wikimedia Commons e scarica le immagini. Lo script si chiama `wlm.py` ed è in questa cartella. Prima di lanciarlo serve l'ambiente Anaconda descritto nel README principale del repo.
 
 ## Passo 1: eseguire la query su Wikidata
 
@@ -37,30 +37,31 @@ GROUP BY ?monumento ?monumentoLabel
 LIMIT 200
 ```
 
-La colonna `immagine1` contiene il link al file su Commons, e lo script la legge da lì.
-
 ## Passo 2: preparare la cartella
 
 Metti nella stessa cartella il file `risultati_wikidata.csv` e lo script `wlm.py`.
 
-## Passo 3: installare requests
+## Passo 3: lanciare lo script
 
-Una sola volta, dal terminale:
+Dall'ambiente `bauer-2027` (vedi il README principale), nella cartella del workflow:
 
-- Windows: `py -m pip install requests`
-- Mac: `python3 -m pip install requests`
+```
+python wlm.py
+```
 
-## Passo 4: lanciare lo script
+Lo script produce tre risultati:
 
-- Windows: `py wlm.py`
-- Mac: `python3 wlm.py`
+- `risultati_wikidata_pulito.csv`: la copia del CSV di Wikidata con due colonne comuni, `monumento` (il Q-number, per esempio `Q839012`) e `file` (il nome sicuro dell'immagine).
+- `crediti.csv`: una riga per ogni coppia monumento-file, con le colonne `monumento` e `file`, più autore, licenza, link e data.
+- la cartella `immagini`, con le immagini scaricate con nomi sicuri.
 
-Lo script legge il CSV, elimina i duplicati, scrive `crediti.csv` e scarica le immagini nella cartella `immagini`. Il CSV dei crediti ha una colonna `monumento_wikidata` con il Q-number del monumento, così ogni riga rimanda al monumento da cui viene l'immagine.
+Le due colonne `monumento` e `file` servono per collegare i due CSV con un vlookup, usando come chiave la colonna `monumento` o la colonna `file`.
 
-## Passo 5: verificare i risultati
+## Passo 4: verificare i risultati
 
-Controlla che compaiano `crediti.csv` e la cartella `immagini`. Il numero di righe del CSV deve corrispondere al numero di file scaricati.
+Controlla che compaiano i tre risultati. Il numero di righe di `crediti.csv` deve essere almeno il numero di file scaricati, perché un file collegato a più monumenti compare su più righe.
 
 ## Note
 
+- Il nome sicuro contiene solo lettere, cifre, underscore e l'estensione in minuscolo: niente accenti, spazi o apostrofi. Se due file avrebbero lo stesso nome, il secondo riceve il suffisso `_2`.
 - Se un monumento non ha P18, la riga non ha immagine e viene saltata.
