@@ -20,7 +20,13 @@ Nel campo `HEADERS` inserisci il tuo contatto al posto del segnaposto.
 
 ## Passo 3: lanciare lo script
 
-In Anaconda Navigator, nell'ambiente `bauer-2027`, apri `categoria.py` in Spyder con File > Apri e premi il pulsante verde Esegui, oppure F5. Il risultato compare nella console in basso.
+Apri Anaconda Prompt (Windows) o il Terminale (Mac), attiva l'ambiente, vai nella cartella del workflow e lancia lo script:
+
+```
+conda activate bauer-2027
+cd 2-commons
+python categoria.py
+```
 
 Il primo messaggio dice quanti file ci sono in totale, comprese le sottocategorie. Con `SCARICA_TUTTE = False` vengono scaricati solo 10 file. Il CSV dei crediti viene scritto per tutti i file trovati, non solo per quelli scaricati.
 

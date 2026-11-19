@@ -43,7 +43,13 @@ Metti nella stessa cartella il file `risultati_wikidata.csv` e lo script `wlm.py
 
 ## Passo 3: lanciare lo script
 
-In Anaconda Navigator, nell'ambiente `bauer-2027`, apri `wlm.py` in Spyder con File > Apri e premi il pulsante verde Esegui, oppure F5. Il risultato compare nella console in basso.
+Apri Anaconda Prompt (Windows) o il Terminale (Mac), attiva l'ambiente, vai nella cartella del workflow e lancia lo script:
+
+```
+conda activate bauer-2027
+cd 1-wikidata
+python wlm.py
+```
 
 Lo script produce tre risultati:
 
