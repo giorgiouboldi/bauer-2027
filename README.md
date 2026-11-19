@@ -1,6 +1,13 @@
 # bauer-2027
 A repository of tools for the data visualization course at cfp Bauer about data visualization using content from wikidata and commons
 
+## Software necessario
+
+- **Anaconda Distribution**: installa Python e Anaconda Navigator, con cui si crea l'ambiente del corso. Si scarica da [anaconda.com](https://www.anaconda.com).
+- **Visual Studio Code**: l'editor con cui si possono leggere e modificare gli script Python. Si scarica da [code.visualstudio.com](https://code.visualstudio.com). Dopo l'installazione, aggiungi l'estensione Python di Microsoft e scegli l'ambiente `bauer-2027` come interprete (comando «Python: Select Interpreter»).
+- **Un browser**, per eseguire le query su query.wikidata.org.
+- **Un account Wikimedia**, necessario per le query su commons-query.wikimedia.org.
+
 ## Workflow
 
 ### `1-wikidata/`: monumenti di Wiki Loves Monuments
