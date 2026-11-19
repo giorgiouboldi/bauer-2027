@@ -1,0 +1,10 @@
+
+# file generati dagli script e dati scaricati
+risultati_wikidata.csv
+crediti_*.csv
+immagini_*/
+__pycache__/
+*.pyc
+.DS_Store
+immagini/
+crediti.csv
