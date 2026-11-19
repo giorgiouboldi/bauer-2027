@@ -63,5 +63,4 @@ Controlla che compaiano `crediti.csv` e la cartella `immagini`. Il numero di rig
 
 ## Note
 
-- Il workflow non è ancora stato eseguito. Va provato prima della lezione.
 - Se un monumento non ha P18, la riga non ha immagine e viene saltata.

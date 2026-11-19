@@ -38,4 +38,4 @@ Imposta `SCARICA_TUTTE = True` e lancia di nuovo lo script. Per la collezione de
 
 - Lo script include anche le sottocategorie, quindi il numero di file può essere più alto di quello mostrato nella pagina della categoria principale.
 - Il campo autore può contenere codice HTML: va ripulito a mano nel CSV.
-- Il workflow non è ancora stato eseguito. Il controllo più utile è confrontare il numero di righe del CSV con il numero di file trovati.
+- Il controllo più utile è confrontare il numero di righe del CSV con il numero di file trovati.
