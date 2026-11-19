@@ -1,6 +1,6 @@
 # Workflow: monumenti WLM con immagini e crediti
 
-Questo workflow parte dalla query su Wikidata, raccoglie i crediti delle immagini su Wikimedia Commons e scarica le immagini. Lo script si chiama `wlm.py` ed è in questa cartella. Prima di lanciarlo serve l'ambiente Anaconda descritto nel README principale del repo.
+Questo workflow parte dalla query su Wikidata, raccoglie i crediti delle immagini su Wikimedia Commons e scarica le immagini. Lo script si chiama `wlm.py` ed è in questa cartella. Per lanciarlo serve l'ambiente `bauer-2027` creato con Anaconda, come descritto nel README principale del repo.
 
 ## Passo 1: eseguire la query su Wikidata
 
@@ -43,11 +43,7 @@ Metti nella stessa cartella il file `risultati_wikidata.csv` e lo script `wlm.py
 
 ## Passo 3: lanciare lo script
 
-Dall'ambiente `bauer-2027` (vedi il README principale), nella cartella del workflow:
-
-```
-python wlm.py
-```
+In Anaconda Navigator, nell'ambiente `bauer-2027`, apri `wlm.py` in Spyder con File > Apri e premi il pulsante verde Esegui, oppure F5. Il risultato compare nella console in basso.
 
 Lo script produce tre risultati:
 

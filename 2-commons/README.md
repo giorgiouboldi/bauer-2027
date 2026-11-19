@@ -1,6 +1,6 @@
 # Workflow: immagini e metadati di una categoria di Commons
 
-Questo workflow scarica i file di una categoria di Wikimedia Commons, comprese le sottocategorie, e crea un CSV con i crediti di ogni file. Lo script si chiama `categoria.py` ed è in questa cartella. Prima di lanciarlo serve l'ambiente Anaconda descritto nel README principale del repo.
+Questo workflow scarica i file di una categoria di Wikimedia Commons, comprese le sottocategorie, e crea un CSV con i crediti di ogni file. Lo script si chiama `categoria.py` ed è in questa cartella. Per lanciarlo serve l'ambiente `bauer-2027` creato con Anaconda, come descritto nel README principale del repo.
 
 ## Passo 1: scegliere la categoria
 
@@ -20,11 +20,7 @@ Nel campo `HEADERS` inserisci il tuo contatto al posto del segnaposto.
 
 ## Passo 3: lanciare lo script
 
-Dall'ambiente `bauer-2027` (vedi il README principale), nella cartella del workflow:
-
-```
-python categoria.py
-```
+In Anaconda Navigator, nell'ambiente `bauer-2027`, apri `categoria.py` in Spyder con File > Apri e premi il pulsante verde Esegui, oppure F5. Il risultato compare nella console in basso.
 
 Il primo messaggio dice quanti file ci sono in totale, comprese le sottocategorie. Con `SCARICA_TUTTE = False` vengono scaricati solo 10 file. Il CSV dei crediti viene scritto per tutti i file trovati, non solo per quelli scaricati.
 
